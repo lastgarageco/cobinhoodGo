@@ -122,7 +122,11 @@ func GetWallet(c Cobin) ([]Wallet, error) {
 }
 
 // GetTicker returns a slice of type Ticker with the exchange/ticker information for the pair
-func GetTicker(c Cobin, coinPair []string) ([]Ticker, error) {
+func GetTicker(c Cobin, coinPair ...string) ([]Ticker, error) {
+	if len(coinPair) == 0 {
+		return nil, errors.New("You need to provide at least one coin pair")
+	}
+
 	var tick []Ticker
 	cobinhoodTicker := ticker{}
 
