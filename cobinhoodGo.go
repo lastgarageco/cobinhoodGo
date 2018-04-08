@@ -153,7 +153,7 @@ func GetTicker(c Cobin, coinPair ...string) ([]Ticker, error) {
 	return tick, nil
 }
 
-// GetOpenOrders returna slice of type OpenOrder with all your open orders at the exchange
+// GetOpenOrders returns a slice of type OpenOrder with all your open orders at the exchange
 func GetOpenOrders(c Cobin) ([]OpenOrder, error) {
 	var myOpenOrders []OpenOrder
 	openOrders := openorders{}
@@ -255,7 +255,7 @@ func PlaceOrder(c Cobin, po PlaceOrderData) (PlaceOrderResult, error) {
 	return myPOResult, nil
 }
 
-// send request to Cobinhood
+// send requested acction to Cobinhood
 func requestCobinhood(c Cobin, postType string, apiURL string, body io.Reader, target interface{}) error {
 	if c.APIKey == "" {
 		return errors.New("Api Key can't be empty")
