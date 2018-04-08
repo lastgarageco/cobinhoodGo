@@ -204,6 +204,23 @@ func GetOrderStatus(c Cobin, orderID string) (Order, error) {
 	return myOrderStatus, nil
 }
 
+// CancelOrder cancel an order
+func CancelOrder(c Cobin, orderID string) (bool, error) {
+	status := false
+	statusMsg := statusmessage{}
+
+	err := requestCobinhood(c, "DELETE", "https://api.cobinhood.com/v1/trading/orders/"+orderID, nil, &statusMsg)
+	if err != nil {
+		return false, err
+	}
+
+	if statusMsg.Success == true {
+		status = true
+	}
+
+	return status, nil
+}
+
 // PlaceOrder lets you place an order in the exchange
 func PlaceOrder(c Cobin, po PlaceOrderData) (PlaceOrderResult, error) {
 	var myPOResult PlaceOrderResult

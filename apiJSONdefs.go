@@ -97,3 +97,7 @@ type placeorderresult struct {
 		} `json:"order"`
 	} `json:"result"`
 }
+
+type statusmessage struct {
+	Success bool `json:"success"`
+}
