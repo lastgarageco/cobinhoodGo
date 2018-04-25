@@ -1,3 +1,5 @@
+// Package cobinhoodgo implements the basic calls of cobinhood API
+// defined by their documentation
 package cobinhoodgo
 
 import (
