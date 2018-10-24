@@ -12,155 +12,62 @@ import (
 	"time"
 )
 
+const (
+	apiBase = "https://api.cobinhood.com/v1/"
+)
+
 // Cobin holds your Cobinhood configuration
 type Cobin struct {
-	APIKey string
+	apiKey string
 }
 
 // SetAPIKey set your Coobinhood API Key
 func (c *Cobin) SetAPIKey(key string) {
-	c.APIKey = key
+	c.apiKey = key
 }
 
-// Wallet hold you wallet balances
-type Wallet struct {
-	Currency string
-	Type     string
-	Total    float64
-	OnOrder  float64
-	Locked   bool
-	UsdValue float64
-	BtcValue float64
-}
+// GetBalances returns a slice of all non-zero balances of your account
+func (c *Cobin) GetBalances() ([]Balance, error) {
 
-// Ticker hold the ticker information for the coin pair
-type Ticker struct {
-	TradingPairID  string
-	Timestamp      int64
-	Two4HHigh      string
-	Two4HLow       string
-	Two4HOpen      string
-	Two4HVolume    string
-	LastTradePrice float64
-	HighestBid     float64
-	LowestAsk      float64
-}
-
-// OpenOrder hold Open Orders information
-type OpenOrder struct {
-	ID            string
-	TradingPairID string
-	Side          string
-	Type          string
-	Price         float64
-	Size          float64
-	Filled        float64
-	State         string
-	Timestamp     int64
-	EqPrice       string
-	CompletedAt   string
-	TradingPair   string
-}
-
-// Order to hold the information about an order
-type Order struct {
-	ID          string
-	TradingPair string
-	State       string
-	Side        string
-	Type        string
-	Price       float64
-	Size        float64
-	Filled      float64
-	Timestamp   int64
-}
-
-// PlaceOrderData is for the necessary data to place an order
-type PlaceOrderData struct {
-	TradingPairID string
-	Side          string
-	Type          string
-	Price         float64
-	Size          float64
-}
-
-// PlaceOrderResult holds the result for placing an order
-type PlaceOrderResult struct {
-	ID          string
-	TradingPair string
-	State       string
-	Side        string
-	Type        string
-	Price       float64
-	Size        float64
-	Filled      float64
-	Timestamp   int64
-	EqPrice     string
-}
-
-// GetWallet returns a slice of type Wallet with balances of your account
-func GetWallet(c Cobin) ([]Wallet, error) {
-	var myWallet []Wallet
-	walletBalances := wallet{}
-
-	err := requestCobinhood(c, "GET", "https://api.cobinhood.com/v1/wallet/balances", nil, &walletBalances)
+	var response balancesResponse
+	err := c.request("GET", "wallet/balances", nil, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	var w Wallet
-	for i := range walletBalances.Result.Balances {
-		w.Currency = walletBalances.Result.Balances[i].Currency
-		w.Type = walletBalances.Result.Balances[i].Type
-		w.Total, _ = strconv.ParseFloat(walletBalances.Result.Balances[i].Total, 64)
-		w.OnOrder, _ = strconv.ParseFloat(walletBalances.Result.Balances[i].OnOrder, 64)
-		w.Locked = walletBalances.Result.Balances[i].Locked
-		w.UsdValue, _ = strconv.ParseFloat(walletBalances.Result.Balances[i].UsdValue, 64)
-		w.BtcValue, _ = strconv.ParseFloat(walletBalances.Result.Balances[i].BtcValue, 64)
+	return response.Result.Balances, nil
+}
 
-		myWallet = append(myWallet, w)
+// GetTradingPairs returns all available trading pairs
+func (c *Cobin) GetTradingPairs() ([]TradingPair, error) {
+
+	var response tradingPairsResponse
+	err := c.request("GET", "market/trading_pairs", nil, &response)
+	if err != nil {
+		return nil, err
 	}
-	return myWallet, nil
+
+	return response.Result.TradingPairs, nil
 }
 
 // GetTicker returns a slice of type Ticker with the exchange/ticker information for the pair
-func GetTicker(c Cobin, coinPair ...string) ([]Ticker, error) {
-	if len(coinPair) == 0 {
-		return nil, errors.New("You need to provide at least one coin pair")
+func (c *Cobin) GetTicker(tradingPairID string) (Ticker, error) {
+
+	var response tickerResponse
+	err := c.request("GET", "market/tickers/"+tradingPairID, nil, &response)
+	if err != nil {
+		return Ticker{}, err
 	}
 
-	var tick []Ticker
-	cobinhoodTicker := ticker{}
-
-	var t Ticker
-	for i := range coinPair {
-		err := requestCobinhood(c, "GET", "https://api.cobinhood.com/v1/market/tickers/"+coinPair[i], nil, &cobinhoodTicker)
-		if err != nil {
-			return nil, err
-		}
-
-		t.HighestBid, _ = strconv.ParseFloat(cobinhoodTicker.Result.Ticker.HighestBid, 64)
-		t.LastTradePrice, _ = strconv.ParseFloat(cobinhoodTicker.Result.Ticker.LastTradePrice, 64)
-		t.LowestAsk, _ = strconv.ParseFloat(cobinhoodTicker.Result.Ticker.LowestAsk, 64)
-		t.Timestamp = cobinhoodTicker.Result.Ticker.Timestamp
-		t.TradingPairID = cobinhoodTicker.Result.Ticker.TradingPairID
-		t.Two4HHigh = cobinhoodTicker.Result.Ticker.Two4HHigh
-		t.Two4HLow = cobinhoodTicker.Result.Ticker.Two4HLow
-		t.Two4HOpen = cobinhoodTicker.Result.Ticker.Two4HOpen
-		t.Two4HVolume = cobinhoodTicker.Result.Ticker.Two4HVolume
-
-		tick = append(tick, t)
-	}
-
-	return tick, nil
+	return response.Result.Ticker, nil
 }
 
 // GetOpenOrders returns a slice of type OpenOrder with all your open orders at the exchange
-func GetOpenOrders(c Cobin) ([]OpenOrder, error) {
+func (c *Cobin) GetOpenOrders() ([]OpenOrder, error) {
 	var myOpenOrders []OpenOrder
 	openOrders := openorders{}
 
-	err := requestCobinhood(c, "GET", "https://api.cobinhood.com/v1/trading/orders", nil, &openOrders)
+	err := c.request("GET", "trading/orders", nil, &openOrders)
 	if err != nil {
 		return nil, err
 	}
@@ -184,11 +91,11 @@ func GetOpenOrders(c Cobin) ([]OpenOrder, error) {
 }
 
 // GetOrderStatus returns the status of an Order
-func GetOrderStatus(c Cobin, orderID string) (Order, error) {
+func (c *Cobin) GetOrderStatus(orderID string) (Order, error) {
 	var myOrderStatus Order
 	orderStatus := order{}
 
-	err := requestCobinhood(c, "GET", "https://api.cobinhood.com/v1/trading/orders/"+orderID, nil, &orderStatus)
+	err := c.request("GET", "trading/orders/"+orderID, nil, &orderStatus)
 	if err != nil {
 		return myOrderStatus, err
 	}
@@ -207,11 +114,11 @@ func GetOrderStatus(c Cobin, orderID string) (Order, error) {
 }
 
 // CancelOrder cancel an order
-func CancelOrder(c Cobin, orderID string) (bool, error) {
+func (c *Cobin) CancelOrder(orderID string) (bool, error) {
 	status := false
 	statusMsg := statusmessage{}
 
-	err := requestCobinhood(c, "DELETE", "https://api.cobinhood.com/v1/trading/orders/"+orderID, nil, &statusMsg)
+	err := c.request("DELETE", "trading/orders/"+orderID, nil, &statusMsg)
 	if err != nil {
 		return false, err
 	}
@@ -224,7 +131,7 @@ func CancelOrder(c Cobin, orderID string) (bool, error) {
 }
 
 // PlaceOrder lets you place an order in the exchange
-func PlaceOrder(c Cobin, po PlaceOrderData) (PlaceOrderResult, error) {
+func (c *Cobin) PlaceOrder(po PlaceOrderData) (PlaceOrderResult, error) {
 	var myPOResult PlaceOrderResult
 	newOrder := &placeorder{
 		TradingPairID: po.TradingPairID,
@@ -238,7 +145,7 @@ func PlaceOrder(c Cobin, po PlaceOrderData) (PlaceOrderResult, error) {
 
 	placedOrder := placeorderresult{}
 
-	err := requestCobinhood(c, "POST", "https://api.cobinhood.com/v1/trading/orders", bytes.NewReader(orderJSON), &placedOrder)
+	err := c.request("POST", "trading/orders", bytes.NewReader(orderJSON), &placedOrder)
 	if err != nil {
 		return myPOResult, err
 	}
@@ -258,15 +165,16 @@ func PlaceOrder(c Cobin, po PlaceOrderData) (PlaceOrderResult, error) {
 }
 
 // send requested acction to Cobinhood
-func requestCobinhood(c Cobin, postType string, apiURL string, body io.Reader, target interface{}) error {
-	if c.APIKey == "" {
+func (c *Cobin) request(postType string, apiURL string, body io.Reader, target interface{}) error {
+
+	if c.apiKey == "" {
 		return errors.New("Api Key can't be empty")
 	}
 
 	client := &http.Client{Timeout: 30 * time.Second}
-	req, err := http.NewRequest(postType, apiURL, body)
+	req, err := http.NewRequest(postType, apiBase+apiURL, body)
 
-	req.Header.Add("Authorization", c.APIKey)
+	req.Header.Add("Authorization", c.apiKey)
 	req.Header.Add("nonce", strconv.FormatInt(time.Now().UnixNano()/1000000, 10))
 
 	resp, err := client.Do(req)
@@ -275,6 +183,8 @@ func requestCobinhood(c Cobin, postType string, apiURL string, body io.Reader, t
 		return err
 	}
 	defer resp.Body.Close()
+
+	// TODO intercept failure in json value here
 
 	return json.NewDecoder(resp.Body).Decode(target)
 }

@@ -1,8 +1,6 @@
 # cobinhoodGo
-a Go package which implements the API from Cobinhood.com
+a Go package which implements part of the API from Cobinhood.com
 
 Trade cyrptocurrency for free
 
-Example, look at:
-
-https://github.com/lastgarageco/cobinhood
+Original code: https://github.com/lastgarageco/cobinhoodGo
