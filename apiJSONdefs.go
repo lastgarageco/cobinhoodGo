@@ -1,16 +1,5 @@
 package cobinhoodgo
 
-// Wallet hold you wallet balances
-type Wallet struct {
-	Currency string
-	Type     string
-	Total    float64
-	OnOrder  float64
-	Locked   bool
-	UsdValue float64
-	BtcValue float64
-}
-
 // Ticker hold the ticker information for the coin pair
 type Ticker struct {
 	TradingPairID  string
@@ -34,12 +23,12 @@ type tickerResponse struct {
 // OpenOrder hold Open Orders information
 type OpenOrder struct {
 	ID            string
-	TradingPairID string
+	TradingPairID string `json:"trading_pair_id"`
 	Side          string
 	Type          string
-	Price         float64
-	Size          float64
-	Filled        float64
+	Price         float64 `json:"price,string"`
+	Size          float64 `json:"size,string"`
+	Filled        float64 `json:"filled,string"`
 	State         string
 	Timestamp     int64
 	EqPrice       string
@@ -47,8 +36,15 @@ type OpenOrder struct {
 	TradingPair   string
 }
 
+type openOrderResponse struct {
+	Success bool `json:"success"`
+	Result  struct {
+		OpenOrders []OpenOrder `json:"orders"`
+	} `json:"result"`
+}
+
 // Order to hold the information about an order
-type Order struct {
+type OrderStatus struct {
 	ID          string
 	TradingPair string
 	State       string
@@ -60,27 +56,41 @@ type Order struct {
 	Timestamp   int64
 }
 
-// PlaceOrderData is for the necessary data to place an order
-type PlaceOrderData struct {
-	TradingPairID string
-	Side          string
-	Type          string
-	Price         float64
-	Size          float64
+type orderStatusResponse struct {
+	Success bool `json:"success"`
+	Result  struct {
+		OrderStatus OrderStatus `json:"ticker"`
+	} `json:"result"`
 }
 
-// PlaceOrderResult holds the result for placing an order
-type PlaceOrderResult struct {
+// PlaceOrderRequest contains data regarding a new order
+type orderRequest struct {
+	TradingPairID string `json:"trading_pair_id"`
+	Side          string `json:"side"`
+	Type          string `json:"type"`
+	Price         string `json:"price"`
+	Size          string `json:"size"`
+}
+
+// PlacedOrderResult holds the result for placing an order
+type PlacedOrder struct {
 	ID          string
-	TradingPair string
+	TradingPair string `json:"trading_pair_id"`
 	State       string
 	Side        string
-	Type        string
-	Price       float64
-	Size        float64
-	Filled      float64
-	Timestamp   int64
-	EqPrice     string
+	Type        string  `json:"completed_at"`
+	Price       float64 `json:"price,string"`
+	Size        float64 `json:"size,string"`
+	Filled      float64 `json:"filled,string"`
+	Timestamp   int64   `json:"timestamp"`
+	EqPrice     string  `json:"eq_price"`
+}
+
+type placedOrderResponse struct {
+	Success bool `json:"success"`
+	Result  struct {
+		PlacedOrder PlacedOrder `json:"order"`
+	} `json:"result"`
 }
 
 type Balance struct {
@@ -117,89 +127,6 @@ type tradingPairsResponse struct {
 	} `json:"result"`
 }
 
-type openorders struct {
-	Success bool `json:"success"`
-	Result  struct {
-		Limit     int `json:"limit"`
-		Page      int `json:"page"`
-		TotalPage int `json:"total_page"`
-		Orders    []struct {
-			ID            string      `json:"id"`
-			TradingPairID string      `json:"trading_pair_id"`
-			Side          string      `json:"side"`
-			Type          string      `json:"type"`
-			Price         string      `json:"price"`
-			Size          string      `json:"size"`
-			Filled        string      `json:"filled"`
-			State         string      `json:"state"`
-			Timestamp     int64       `json:"timestamp"`
-			EqPrice       string      `json:"eq_price"`
-			CompletedAt   interface{} `json:"completed_at"`
-			TradingPair   string      `json:"trading_pair"`
-		} `json:"orders"`
-	} `json:"result"`
-}
-
-type order struct {
-	Success bool `json:"success"`
-	Result  struct {
-		Order struct {
-			ID          string `json:"id"`
-			TradingPair string `json:"trading_pair"`
-			State       string `json:"state"`
-			Side        string `json:"side"`
-			Type        string `json:"type"`
-			Price       string `json:"price"`
-			Size        string `json:"size"`
-			Filled      string `json:"filled"`
-			Timestamp   int64  `json:"timestamp"`
-		} `json:"order"`
-	} `json:"result"`
-}
-
-type ticker struct {
-	Success bool `json:"success"`
-	Result  struct {
-		Ticker struct {
-			TradingPairID  string `json:"trading_pair_id"`
-			Timestamp      int64  `json:"timestamp"`
-			Two4HHigh      string `json:"24h_high"`
-			Two4HLow       string `json:"24h_low"`
-			Two4HOpen      string `json:"24h_open"`
-			Two4HVolume    string `json:"24h_volume"`
-			LastTradePrice string `json:"last_trade_price"`
-			HighestBid     string `json:"highest_bid"`
-			LowestAsk      string `json:"lowest_ask"`
-		} `json:"ticker"`
-	} `json:"result"`
-}
-
-type placeorder struct {
-	TradingPairID string `json:"trading_pair_id"`
-	Side          string `json:"side"`
-	Type          string `json:"type"`
-	Price         string `json:"price"`
-	Size          string `json:"size"`
-}
-
-type placeorderresult struct {
-	Success bool `json:"success"`
-	Result  struct {
-		Order struct {
-			ID          string `json:"id"`
-			TradingPair string `json:"trading_pair"`
-			State       string `json:"state"`
-			Side        string `json:"side"`
-			Type        string `json:"type"`
-			Price       string `json:"price"`
-			Size        string `json:"size"`
-			Filled      string `json:"filled"`
-			Timestamp   int64  `json:"timestamp"`
-			EqPrice     string `json:"eq_price"`
-		} `json:"order"`
-	} `json:"result"`
-}
-
-type statusmessage struct {
+type StatusMessage struct {
 	Success bool `json:"success"`
 }

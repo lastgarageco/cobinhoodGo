@@ -51,4 +51,32 @@ func main() {
 		log.Fatalf("error = %s", err.Error())
 	}
 	log.Printf("ticker = %+v", ticker)
+
+	log.Printf("---")
+
+	placedOrder, err := cobin.PlaceOrder("ETH-USDT", "bid", "limit", 0.01, 100)
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	log.Printf("placedOrder = %+v", placedOrder)
+
+	placedOrder, err = cobin.PlaceOrder("ETH-USDT", "ask", "limit", 1000, 0.01)
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	log.Printf("placedOrder = %+v", placedOrder)
+
+	log.Printf("---")
+
+	openOrders, err := cobin.GetOpenOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	for i, item := range openOrders {
+		log.Printf("openOrders item = %+v", item)
+		if i > 4 {
+			break
+		}
+	}
+
 }
