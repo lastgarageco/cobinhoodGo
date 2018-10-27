@@ -1,4 +1,4 @@
-package cobinhoodgo
+package cobinhood
 
 // Ticker holds the ticker information for a tradingpair
 type Ticker struct {

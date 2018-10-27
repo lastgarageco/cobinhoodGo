@@ -1,6 +1,4 @@
-// Package cobinhoodgo implements the basic calls of cobinhood API
-// defined by their documentation
-package cobinhoodgo
+package cobinhood
 
 import (
 	"bytes"
@@ -16,18 +14,21 @@ const (
 	apiBase = "https://api.cobinhood.com/v1/"
 )
 
-// Cobin holds your Cobinhood configuration
-type Cobin struct {
-	apiKey string
+// Client holds your Cobinhood configuration
+type Client struct {
+	apiKey  string
+	Timeout time.Duration
 }
 
-// SetAPIKey set your Coobinhood API Key
-func (c *Cobin) SetAPIKey(key string) {
-	c.apiKey = key
+// NewClient creates a new cobinhood client
+func NewClient(apiKey string, timeout time.Duration) *Client {
+	return &Client{
+		apiKey:  apiKey,
+		Timeout: timeout}
 }
 
 // GetBalances returns a slice of all non-zero balances of your account
-func (c *Cobin) GetBalances() ([]Balance, error) {
+func (c *Client) GetBalances() ([]Balance, error) {
 
 	result, err := c.request("GET", "wallet/balances", nil, true)
 	if err != nil {
@@ -42,7 +43,7 @@ func (c *Cobin) GetBalances() ([]Balance, error) {
 }
 
 // GetTradingPairs returns all available trading pairs
-func (c *Cobin) GetTradingPairs() ([]TradingPair, error) {
+func (c *Client) GetTradingPairs() ([]TradingPair, error) {
 
 	result, err := c.request("GET", "market/trading_pairs", nil, false)
 	if err != nil {
@@ -58,7 +59,7 @@ func (c *Cobin) GetTradingPairs() ([]TradingPair, error) {
 }
 
 // GetTicker returns a slice of type Ticker with the exchange/ticker information for the pair
-func (c *Cobin) GetTicker(tradingPairID string) (Ticker, error) {
+func (c *Client) GetTicker(tradingPairID string) (Ticker, error) {
 
 	result, err := c.request("GET", "market/tickers/"+tradingPairID, nil, false)
 	if err != nil {
@@ -74,7 +75,7 @@ func (c *Cobin) GetTicker(tradingPairID string) (Ticker, error) {
 }
 
 // GetOpenOrders returns a slice of type OpenOrder with all your open orders at the exchange
-func (c *Cobin) GetOpenOrders() ([]OpenOrder, error) {
+func (c *Client) GetOpenOrders() ([]OpenOrder, error) {
 
 	result, err := c.request("GET", "trading/orders", nil, true)
 	if err != nil {
@@ -90,7 +91,7 @@ func (c *Cobin) GetOpenOrders() ([]OpenOrder, error) {
 }
 
 // PlaceOrder places an order
-func (c *Cobin) PlaceOrder(tradingPairID, side, tradeType string, price, size float64) (PlacedOrder, error) {
+func (c *Client) PlaceOrder(tradingPairID, side, tradeType string, price, size float64) (PlacedOrder, error) {
 	request := &orderRequest{
 		TradingPairID: tradingPairID,
 		Side:          side,
@@ -114,14 +115,14 @@ func (c *Cobin) PlaceOrder(tradingPairID, side, tradeType string, price, size fl
 }
 
 // CancelOrder cancels an order
-func (c *Cobin) CancelOrder(orderID string) error {
+func (c *Client) CancelOrder(orderID string) error {
 	_, err := c.request("DELETE", "trading/orders/"+orderID, nil, true)
 	return err
 }
 
-func (c *Cobin) request(method string, apiURL string, body io.Reader, private bool) (*GenericResult, error) {
+func (c *Client) request(method string, apiURL string, body io.Reader, private bool) (*GenericResult, error) {
 
-	client := &http.Client{Timeout: time.Second}
+	client := &http.Client{Timeout: c.Timeout}
 	req, err := http.NewRequest(method, apiBase+apiURL, body)
 
 	if private {

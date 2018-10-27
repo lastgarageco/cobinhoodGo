@@ -4,6 +4,7 @@ import (
 	"github.com/lk16/cobinhoodGo"
 	"log"
 	"os"
+	"time"
 )
 
 // this file is currently here for quick testing
@@ -17,8 +18,7 @@ func main() {
 		log.Fatalf("please set COBINHOOD_APIKEY environment variable")
 	}
 
-	cobin := &cobinhoodgo.Cobin{}
-	cobin.SetAPIKey(apiKey)
+	cobin := cobinhood.NewClient(apiKey, time.Second)
 
 	wallet, err := cobin.GetBalances()
 	if err != nil {
