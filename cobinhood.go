@@ -120,6 +120,21 @@ func (c *Client) CancelOrder(orderID string) error {
 	return err
 }
 
+// CancelAllOrders cancels all open orders. It only returns the last error if any
+func (c *Client) CancelAllOrders() error {
+	openOrders, err := c.GetOpenOrders()
+	if err != nil {
+		return err
+	}
+
+	for _, openOrder := range openOrders {
+		err = c.CancelOrder(openOrder.ID)
+		// cancelling is more important than returning the error
+	}
+
+	return err
+}
+
 func (c *Client) request(method string, apiURL string, body io.Reader, private bool) (*GenericResult, error) {
 
 	client := &http.Client{Timeout: c.Timeout}

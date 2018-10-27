@@ -8,7 +8,10 @@ import (
 )
 
 // this file is currently here for quick testing
-// unit tests may be provided later
+
+// WARNING: this cancels all your open orders and places some new ones
+// afterwards all orders will be cancelled
+// USE WITH CARE
 
 func main() {
 
@@ -18,9 +21,19 @@ func main() {
 		log.Fatalf("please set COBINHOOD_APIKEY environment variable")
 	}
 
-	cobin := cobinhood.NewClient(apiKey, time.Second)
+	// lower timeout is recommended for production use
+	client := cobinhood.NewClient(apiKey, 5*time.Second)
 
-	wallet, err := cobin.GetBalances()
+	log.Printf("Cancel all orders:")
+	err := client.CancelAllOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+
+	log.Printf("---")
+	log.Printf("Get balance:")
+
+	wallet, err := client.GetBalances()
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
@@ -31,8 +44,9 @@ func main() {
 		}
 	}
 	log.Printf("---")
+	log.Printf("Get trading pairs:")
 
-	tradingPairs, err := cobin.GetTradingPairs()
+	tradingPairs, err := client.GetTradingPairs()
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
@@ -43,30 +57,33 @@ func main() {
 		}
 	}
 	log.Printf("---")
+	log.Printf("Get ticker:")
 
-	ticker, err := cobin.GetTicker("BTC-USDT")
+	ticker, err := client.GetTicker("BTC-USDT")
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
 	log.Printf("ticker = %+v", ticker)
 
 	log.Printf("---")
+	log.Printf("Place two orders:")
 
-	placedOrder, err := cobin.PlaceOrder("ETH-USDT", "bid", "limit", 0.01, 100)
+	placedOrder, err := client.PlaceOrder("ETH-USDT", "bid", "limit", 0.01, 10)
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
 	log.Printf("placedOrder = %+v", placedOrder)
 
-	placedOrder, err = cobin.PlaceOrder("ETH-USDT", "ask", "limit", 1, 0.01)
+	placedOrder, err = client.PlaceOrder("ETH-USDT", "ask", "limit", 500, 0.12)
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
 	log.Printf("placedOrder = %+v", placedOrder)
 
 	log.Printf("---")
+	log.Printf("List orders:")
 
-	openOrders, err := cobin.GetOpenOrders()
+	openOrders, err := client.GetOpenOrders()
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
@@ -77,4 +94,25 @@ func main() {
 		}
 	}
 
+	log.Printf("---")
+	log.Printf("Cancel all orders:")
+
+	err = client.CancelAllOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+
+	log.Printf("---")
+	log.Printf("List orders again:")
+
+	openOrders, err = client.GetOpenOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	for i, item := range openOrders {
+		log.Printf("openOrders item = %+v", item)
+		if i > 4 {
+			break
+		}
+	}
 }

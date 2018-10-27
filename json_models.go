@@ -43,7 +43,7 @@ type PlacedOrder struct {
 	TradingPair string  `json:"trading_pair_id"`
 	State       string  `json:"state"`
 	Side        string  `json:"side"`
-	Type        string  `json:"completed_at"`
+	Type        string  `json:"type"`
 	Price       float64 `json:"price,string"`
 	Size        float64 `json:"size,string"`
 	Filled      float64 `json:"filled,string"`
