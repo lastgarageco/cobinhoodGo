@@ -30,7 +30,6 @@ func main() {
 			break
 		}
 	}
-
 	log.Printf("---")
 
 	tradingPairs, err := cobin.GetTradingPairs()
@@ -43,7 +42,6 @@ func main() {
 			break
 		}
 	}
-
 	log.Printf("---")
 
 	ticker, err := cobin.GetTicker("BTC-USDT")
@@ -60,7 +58,7 @@ func main() {
 	}
 	log.Printf("placedOrder = %+v", placedOrder)
 
-	placedOrder, err = cobin.PlaceOrder("ETH-USDT", "ask", "limit", 1000, 0.01)
+	placedOrder, err = cobin.PlaceOrder("ETH-USDT", "ask", "limit", 1, 0.01)
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())
 	}
