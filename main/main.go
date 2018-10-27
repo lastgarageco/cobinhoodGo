@@ -115,4 +115,17 @@ func main() {
 			break
 		}
 	}
+	log.Printf("---")
+	log.Printf("List orderbook:")
+	orderbook, err := client.GetOrderBook("ETH-USDT", 3)
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	for _, item := range orderbook.Bids {
+		log.Printf("bid = %+v", item)
+	}
+	log.Printf("-")
+	for _, item := range orderbook.Asks {
+		log.Printf("ask = %+v", item)
+	}
 }

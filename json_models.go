@@ -1,5 +1,11 @@
 package cobinhood
 
+import (
+	"encoding/json"
+	"fmt"
+	"strconv"
+)
+
 // Ticker holds the ticker information for a tradingpair
 type Ticker struct {
 	TradingPairID  string  `json:"trading_pair_id"`
@@ -73,6 +79,49 @@ type TradingPair struct {
 	BaseMinSize    float64 `json:"base_min_size,string"`
 }
 
+// PriceLevel is a pricelevel in the orerbook
+type PriceLevel struct {
+	Price float64
+	Count int64
+	Size  float64
+}
+
+// UnmarshalJSON does JSON unmarshalling
+func (priceLevel *PriceLevel) UnmarshalJSON(bytes []byte) error {
+	var tmp []string
+	if err := json.Unmarshal(bytes, &tmp); err != nil {
+		return err
+	}
+	if len(tmp) != 3 {
+		return fmt.Errorf("wrong number of fields in PriceLevel Unmarshal JSON: %d != 3", len(tmp))
+	}
+
+	var err error
+	priceLevel.Price, err = strconv.ParseFloat(tmp[0], 64)
+	if err != nil {
+		return err
+	}
+
+	priceLevel.Count, err = strconv.ParseInt(tmp[1], 10, 32)
+	if err != nil {
+		return err
+	}
+
+	priceLevel.Size, err = strconv.ParseFloat(tmp[2], 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// OrderBook has the orderbook for a market
+type OrderBook struct {
+	Sequence int          `json:"sequence"`
+	Bids     []PriceLevel `json:"bids"`
+	Asks     []PriceLevel `json:"asks"`
+}
+
 // Error contains an API error string
 type Error struct {
 	ErrorCode string `json:"error_code"`
@@ -85,6 +134,7 @@ type GenericResult struct {
 	Ticker       *Ticker        `json:"ticker"`
 	OpenOrders   *[]OpenOrder   `json:"orders"`
 	PlacedOrder  *PlacedOrder   `json:"order"`
+	OrderBook    *OrderBook     `json:"orderbook"`
 }
 
 // GenericResponse contains the result from any API call

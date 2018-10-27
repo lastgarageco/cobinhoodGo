@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -133,6 +134,23 @@ func (c *Client) CancelAllOrders() error {
 	}
 
 	return err
+}
+
+// GetOrderBook gets the orderbook for a market
+func (c *Client) GetOrderBook(tradingPairID string, limit int) (OrderBook, error) {
+
+	url := fmt.Sprintf("market/orderbooks/%s?limit=%d", tradingPairID, limit)
+	result, err := c.request("GET", url, nil, false)
+	if err != nil {
+		return OrderBook{}, err
+	}
+
+	orderbook := result.OrderBook
+	if orderbook == nil {
+		return OrderBook{}, errors.New("orderbook is nil")
+	}
+
+	return *orderbook, nil
 }
 
 func (c *Client) request(method string, apiURL string, body io.Reader, private bool) (*GenericResult, error) {
