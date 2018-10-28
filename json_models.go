@@ -21,18 +21,17 @@ type Ticker struct {
 
 // OpenOrder holds information on open orders
 type OpenOrder struct {
-	ID            string  `json:"id"`
-	TradingPairID string  `json:"trading_pair_id"`
-	Side          string  `json:"side"`
-	Type          string  `json:"type"`
-	Price         float64 `json:"price,string"`
-	Size          float64 `json:"size,string"`
-	Filled        float64 `json:"filled,string"`
-	State         string  `json:"stats"`
-	Timestamp     int64   `json:"timestamp"`
-	EqPrice       string  `json:"eq_price"`
-	CompletedAt   string  `json:"completed_at"`
-	TradingPair   string  `json:"trading_pair_id"`
+	ID          string  `json:"id"`
+	Side        string  `json:"side"`
+	Type        string  `json:"type"`
+	Price       float64 `json:"price,string"`
+	Size        float64 `json:"size,string"`
+	Filled      float64 `json:"filled,string"`
+	State       string  `json:"stats"`
+	Timestamp   int64   `json:"timestamp"`
+	EqPrice     string  `json:"eq_price"`
+	CompletedAt string  `json:"completed_at"`
+	TradingPair string  `json:"trading_pair_id"`
 }
 
 type orderRequest struct {
