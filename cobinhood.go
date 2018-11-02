@@ -115,6 +115,18 @@ func (c *Client) PlaceOrder(tradingPairID, side, tradeType string, price, size f
 	return *placedOrder, nil
 }
 
+// UpdateOrder updates an order
+func (c *Client) UpdateOrder(orderID string, price, size float64) error {
+	request := &orderUpdateRequest{
+		Price: strconv.FormatFloat(price, 'f', 8, 64),
+		Size:  strconv.FormatFloat(size, 'f', 4, 64)}
+
+	requestJSON, _ := json.Marshal(request)
+
+	_, err := c.request("PUT", "trading/orders/"+orderID, bytes.NewReader(requestJSON), true)
+	return err
+}
+
 // CancelOrder cancels an order
 func (c *Client) CancelOrder(orderID string) error {
 	_, err := c.request("DELETE", "trading/orders/"+orderID, nil, true)

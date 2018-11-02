@@ -115,8 +115,59 @@ func main() {
 			break
 		}
 	}
+
+	log.Printf("---")
+	log.Printf("Place new order:")
+
+	placedOrder, err = client.PlaceOrder("ETH-USDT", "ask", "limit", 500, 0.12)
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	log.Printf("placedOrder = %+v", placedOrder)
+
+	log.Printf("---")
+	log.Printf("Modify order:")
+
+	client.UpdateOrder(placedOrder.ID, 550, 0.12)
+
+	log.Printf("---")
+	log.Printf("List orders again:")
+
+	openOrders, err = client.GetOpenOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	for i, item := range openOrders {
+		log.Printf("openOrders item = %+v", item)
+		if i > 4 {
+			break
+		}
+	}
+
+	log.Printf("---")
+	log.Printf("Cancel all orders:")
+
+	err = client.CancelAllOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+
+	log.Printf("---")
+	log.Printf("List orders again:")
+
+	openOrders, err = client.GetOpenOrders()
+	if err != nil {
+		log.Fatalf("error = %s", err.Error())
+	}
+	for i, item := range openOrders {
+		log.Printf("openOrders item = %+v", item)
+		if i > 4 {
+			break
+		}
+	}
 	log.Printf("---")
 	log.Printf("List orderbook:")
+
 	orderbook, err := client.GetOrderBook("ETH-USDT", 3)
 	if err != nil {
 		log.Fatalf("error = %s", err.Error())

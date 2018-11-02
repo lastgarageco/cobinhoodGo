@@ -42,6 +42,11 @@ type orderRequest struct {
 	Size          string `json:"size"`
 }
 
+type orderUpdateRequest struct {
+	Price string `json:"price"`
+	Size  string `json:"size"`
+}
+
 // PlacedOrder contains the reply after placing an order
 type PlacedOrder struct {
 	ID          string  `json:"id"`
